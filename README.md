@@ -9,6 +9,8 @@
 
 ---
 
+![Matriz DAFO a generar.](imagen.jpg)
+
 ## La idea: convertir un DAFO en una matriz de riesgo, no en una lista
 
 Un DAFO clásico enumera debilidades, amenazas, fortalezas y oportunidades como listas planas. Esa forma no dice cuáles son prioritarias: un factor puede tener un impacto muy alto y aun así representar un riesgo bajo, simplemente porque es poco probable que ocurra.
