@@ -11,9 +11,9 @@
 
 ![Matriz DAFO a generar.](imagen.jpg)
 
-## La idea: convertir un DAFO en una matriz de riesgo, no en una lista
+## Objetivo: convertir un DAFO en una matriz de riesgo.
 
-Un DAFO clásico enumera debilidades, amenazas, fortalezas y oportunidades como listas planas. Esa forma no dice cuáles son prioritarias: un factor puede tener un impacto muy alto y aun así representar un riesgo bajo, simplemente porque es poco probable que ocurra.
+Un DAFO clásico enumera debilidades, amenazas, fortalezas y oportunidades en forma de texto, perdiendo información esencial. Es imposible conover cuáles son prioritarios: un factor puede tener un impacto muy alto y aun así representar un riesgo bajo, simplemente porque es poco probable que ocurra.
 
 Este proyecto traduce cada factor en tres variables comparables:
 
@@ -23,20 +23,20 @@ Este proyecto traduce cada factor en tres variables comparables:
 
 El **nivel de riesgo** (bajo / moderado / alto) no es una media simple de probabilidad e impacto: se calcula con una matriz cualitativa **asimétrica**, que penaliza las amenazas frente a las oportunidades de igual magnitud. Un impacto "muy alto" con probabilidad "media" puede ser riesgo **alto** si es una amenaza, pero solo **moderado** si es una oportunidad equivalente — la matriz completa está documentada en `00_DAFO_RISK.md`.
 
-La aplicación permite cargar los Excel de indicadores ya existentes (o introducirlos a mano), calcula automáticamente DAFO/valor/nivel/color para cada fila, y genera dos salidas: un gráfico interactivo para explorar en pantalla y una figura vectorial (PDF/SVG/PNG) lista para imprenta.
+La aplicación permite cargar ficheros tipo excel de indicadores ya existentes (o introducirlos manualmente), calcula automáticamente DAFO/valor/nivel/color para cada fila, y genera dos salidas: un gráfico interactivo para explorar en pantalla y una figura vectorial (PDF/SVG/PNG) lista para imprenta.
 
 ## Características
 
 - **Clasificación automática en DAFO** — a partir de `SIST/ESPEC` (sistemático/específico) y `TIPO` (negativo/positivo), cada fila se etiqueta como AMENAZA, DEBILIDAD, OPORTUNIDAD o FORTALEZA.
 - **Matriz de riesgo asimétrica** — implementada como tabla de consulta `(probabilidad, impacto con signo) → nivel`, fiel a la matriz cualitativa oficial (penaliza amenazas frente a oportunidades).
-- **Importación flexible** — acepta el esquema limpio de 9 columnas o los Excel legados con hoja `TABLA` (detecta cabeceras por alias: `INDICADOR`/`FACTOR` → `RIESGO`, `SIST`→`SIST/ESPEC`, etc.) y CSV con separador `;` o `,` autodetectado.
+- **Importación flexible** — acepta el esquema limpio de 9 columnas o los ficheros tipo excel legados con hoja `TABLA` (detecta cabeceras por alias: `INDICADOR`/`FACTOR` → `RIESGO`, `SIST`→`SIST/ESPEC`, etc.) y CSV con separador `;` o `,` autodetectado.
 - **Asignación automática del eje X** — los factores sistemáticos reciben índices negativos y los específicos positivos, conservando el mismo valor de X para un mismo código a través de distintos periodos.
 - **Modo comparación temporal** — superpone varios periodos (`Año 1`, `Año 2`…) y traza la trayectoria de cada indicador entre ellos.
 - **Gráfico interactivo (Plotly)** — burbujas con tamaño proporcional al impacto, tooltips con el detalle completo del factor, zoom y tema oscuro.
 - **Exportación editorial (Matplotlib)** — PDF/SVG vectorial o PNG a 300 dpi, con fondo claro (imprenta) u oscuro (pantalla/proyección), título opcional.
 - **Edición en tabla en vivo** — `st.data_editor` con validación por columna (selectboxes para naturaleza, signo, probabilidad, impacto); los cálculos se refrescan al instante.
 - **Índice agregado del ámbito** — media de riesgos negativos, media de positivos, índice global e indicadores en riesgo alto, por periodo.
-- **Exportación de la tabla calculada** — CSV con separador `;` y decimal `,`, listo para Excel en español.
+- **Exportación de la tabla calculada** — CSV con separador `;` y decimal `,`, listo para ficheros tipo excel en español.
 
 ## Requisitos previos
 
@@ -101,7 +101,7 @@ textColor = "#e6e2da"
 | Paso | Qué hace |
 |------|----------|
 | **1 — Arranque** | Al iniciar, la app carga datos de demostración (10 indicadores de ejemplo en dos periodos). |
-| **2 — Importar datos** | En la barra lateral, sube un Excel (`.xlsx`/`.xls`) o CSV con el esquema de 9 columnas, o un Excel legado con hoja `TABLA`. Indica el periodo por defecto si el fichero no lo trae. |
+| **2 — Importar datos** | En la barra lateral, sube un fichero (`.xlsx`/`.xls`) o CSV con el esquema de 9 columnas, o un Excel legado con hoja `TABLA`. Indica el periodo por defecto si el fichero no lo trae. |
 | **3 — Elegir periodo o comparar** | Selecciona un periodo único, o activa **Modo comparación** para superponer varios y ver la trayectoria de cada indicador. |
 | **4 — Revisar el índice agregado** | Consulta la media de riesgos negativos/positivos, el índice global y el nº de indicadores en riesgo alto. |
 | **5 — Explorar el gráfico** | El gráfico Plotly admite zoom y tooltips con el detalle de cada factor (código, riesgo, dato, comentario, nivel…). |
@@ -124,7 +124,7 @@ CODIGO | RIESGO | DATO | COMENTARIO | SIST/ESPEC | TIPO | PROBABILIDAD | IMPACTO
 - `IMPACTO`: `MUY BAJO` · `BAJO` · `MEDIO` · `ALTO` · `MUY ALTO`.
 - `X`: opcional; si se deja vacío, se asigna automáticamente según naturaleza.
 
-Los Excel legados con hoja `TABLA` se reconocen por cabeceras alternativas (`INDICADOR`/`FACTOR`, `SIST`, `NEG`/`SIGNO`…) sin necesidad de renombrar columnas.
+Los ficheros de tipo excel legados con hoja `TABLA` se reconocen por cabeceras alternativas (`INDICADOR`/`FACTOR`, `SIST`, `NEG`/`SIGNO`…) sin necesidad de renombrar columnas.
 
 ## Arquitectura
 
@@ -136,7 +136,7 @@ app_dafo_riesgos.py
 │   ├── compute(df)                  # DAFO, valor de riesgo, coordenada Y y nivel/color por fila
 │   └── auto_assign_x(df)            # Asigna el eje X (sistemático → negativo, específico → positivo)
 ├── 3 · IMPORTACIÓN
-│   ├── _map_headers() / rows_from_matrix()   # Detecta cabecera y alias en Excel/CSV legados
+│   ├── _map_headers() / rows_from_matrix()   # Detecta cabecera y alias en excel/CSV legados
 │   └── read_uploaded(file, periodo)          # Punto de entrada único para .xlsx/.xls/.csv
 ├── 4 · DATOS DE DEMOSTRACIÓN
 │   └── demo_data()                  # 10 indicadores de ejemplo en dos periodos
@@ -161,7 +161,7 @@ app_dafo_riesgos.py
 
 | Fecha | Hito |
 |-------|------|
-| v1 | Primera versión funcional: importación de Excel legados, cálculo de matriz de riesgo asimétrica, gráfico interactivo, exportación editorial y edición en tabla. |
+| v1 | Primera versión funcional: importación de ficheros tipo excel legados, cálculo de matriz de riesgo asimétrica, gráfico interactivo, exportación editorial y edición en tabla. |
 
 ## Licencia
 
